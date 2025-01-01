@@ -3,3 +3,4 @@ max-line-length = 119
 exclude =
     .git
     pycache
+    __pycache__
