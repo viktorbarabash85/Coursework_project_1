@@ -14,11 +14,19 @@ def test_run_main_page(mock_generate_main_page_data: MagicMock, mock_print: Magi
     """
 
     # Настраиваем возвращаемое значение замоканной функции generate_main_page_data
-    mock_generate_main_page_data.return_value = {
-        "greeting": "Добрый день",
-        "cards": [{"last_digits": "1234", "total_spent": 100, "cashback": 1}],
-        "top_transactions": [
-            {"date": "01.12.2024", "amount": 100.0, "category": "Супермаркеты", "description": "Лента"}
+    mock_generate_main_page_data.return_value = \
+        {
+            "greeting": "Добрый день",
+            "cards": [
+                {
+                    "last_digits": "1234",
+                    "total_spent": 100,
+                    "cashback": 1
+                }
+            ],
+            "top_transactions": [
+                {
+                    "date": "01.12.2024", "amount": 100.0, "category": "Супермаркеты", "description": "Лента"}
         ],
         "currency_rates": [{"currency": "USD", "rate": 75.5}, {"currency": "EUR", "rate": 80.2}],
         "stock_prices": [{"stock": "AAPL", "price": 150}, {"stock": "GOOGL", "price": 2800}],
@@ -31,13 +39,8 @@ def test_run_main_page(mock_generate_main_page_data: MagicMock, mock_print: Magi
 
     # Проверяем, что print вызван с ожидаемым текстом
     mock_print.assert_any_call(
-        """
-    Страница "Главная".
-
-    Предоставляет JSON-ответ с данными о расходах за месяц.
-    Имеются данные с операциями за 2021-2024 годы.
-    Выводится анализ данных с начала месяца введенной даты.
-    """
+        'Страница "Главная".\n\n Предоставляет JSON-ответ с данными о расходах за месяц. '
+        "Имеются данные с операциями за 2021-2024 годы. Выводится анализ данных с начала месяца введенной даты."
     )
 
     # Проверяем, что print вызван с ожидаемым текстом
