@@ -1,6 +1,7 @@
 # from utils import main_page, events_page
 # from cashback import profitable_categories, invest_savings, simple_search, search_by_phone, search_transfers
 # from reports import expenses_by_category, expenses_by_weekday, expenses_on_weekend
+from src.services import run_profit_cashback
 from src.views import run_main_page
 
 
@@ -16,8 +17,8 @@ def main() -> None:
         print("_" * 40)
         print("\nВыберите номер категории:")
         print("1. Веб-страницы")
-        print("3. Отчеты")
-        print("2. Сервисы")
+        print("2. Отчеты")
+        print("3. Сервисы")
         print("0. Выход")
 
         category_choice = input(">>> ").strip().upper()
@@ -56,7 +57,7 @@ def main() -> None:
 
                 if task_choice == '1':
                     print("Запуск сервиса 'Выгодные категории повышенного кешбэка'...")
-                    profitable_categories()
+                    run_profit_cashback()
                 elif task_choice == '2':
                     print("Запуск сервиса 'Инвесткопилка'...")
                     invest_savings()

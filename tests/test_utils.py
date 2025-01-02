@@ -6,17 +6,9 @@ import pandas as pd
 import pytest
 from requests import RequestException
 
-from src.utils import (
-    calculate_greeting,
-    fetch_currency_rates,
-    fetch_stock_prices,
-    filter_operations_by_date,
-    get_card_summary,
-    get_top_transactions,
-    load_operations_data,
-    load_user_settings,
-    validate_input_date,
-)
+from src.utils import (calculate_greeting, fetch_currency_rates, fetch_stock_prices, filter_operations_by_date,
+                       get_card_summary, get_top_transactions, load_operations_data, load_user_settings,
+                       validate_input_date)
 
 
 # Тест для validate_input_date
