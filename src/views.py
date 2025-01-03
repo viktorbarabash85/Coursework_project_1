@@ -6,7 +6,7 @@ from src.utils import (calculate_greeting, fetch_currency_rates, fetch_stock_pri
 
 """1. Веб-страницы. Страница "Главная"."""
 
-# Запускаем функцию библиотеки logging для логирования указанного файла
+# Запускаем функцию библиотеки logging для логирования данного файла
 logger = setup_logger("views - home_page", "views")
 
 

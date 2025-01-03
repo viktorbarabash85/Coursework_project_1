@@ -170,7 +170,7 @@ def test_get_card_summary_no_matching_card(test_operations_data: list[dict]) -> 
     ]
 
     # Мокируем функцию load_operations_data
-    with patch("src.utils.load_operations_data") as mock_load_operations_data:
+    with (patch("src.utils.load_operations_data") as mock_load_operations_data):
         # Настраиваем мок, чтобы он возвращал test_operations_data
         mock_load_operations_data.return_value = test_operations_data
 
@@ -184,8 +184,7 @@ def test_get_card_summary_no_matching_card(test_operations_data: list[dict]) -> 
 
         # Проверка без учета порядка
         assert sorted(summary, key=lambda x: x["last_digits"]) == sorted(
-            expected_summary, key=lambda x: x["last_digits"]
-        )
+            expected_summary, key=lambda x: x["last_digits"])
 
 
 # Тест для get_top_transactions

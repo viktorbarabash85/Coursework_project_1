@@ -14,19 +14,11 @@ def test_run_main_page(mock_generate_main_page_data: MagicMock, mock_print: Magi
     """
 
     # Настраиваем возвращаемое значение замоканной функции generate_main_page_data
-    mock_generate_main_page_data.return_value = \
-        {
-            "greeting": "Добрый день",
-            "cards": [
-                {
-                    "last_digits": "1234",
-                    "total_spent": 100,
-                    "cashback": 1
-                }
-            ],
-            "top_transactions": [
-                {
-                    "date": "01.12.2024", "amount": 100.0, "category": "Супермаркеты", "description": "Лента"}
+    mock_generate_main_page_data.return_value = {
+        "greeting": "Добрый день",
+        "cards": [{"last_digits": "1234", "total_spent": 100, "cashback": 1}],
+        "top_transactions": [
+            {"date": "01.12.2024", "amount": 100.0, "category": "Супермаркеты", "description": "Лента"}
         ],
         "currency_rates": [{"currency": "USD", "rate": 75.5}, {"currency": "EUR", "rate": 80.2}],
         "stock_prices": [{"stock": "AAPL", "price": 150}, {"stock": "GOOGL", "price": 2800}],

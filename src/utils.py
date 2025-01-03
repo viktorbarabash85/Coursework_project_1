@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from datetime import datetime
-from typing import Any, Dict, List, Union
+from typing import Dict, List, Union
 
 import pandas as pd
 import requests
@@ -17,18 +17,16 @@ def setup_logger(file_name: str, log_file: str) -> logging.Logger:
     Функция настройки логирования для указанного файла
 
     :param file_name: Название файла, для которого создаются логи
-    :param log_file: Название фала, созданного в папке logs
+    :param log_file: Название файла, созданного в папке logs
     :return: logger переменная формата logging, со всеми настройками
     """
 
     # Создаем директорию для логов, если она не существует
-    import logging
-
     CURRENT_DIR = os.path.dirname(__file__)  # отталкиваемся от директории модуля file_logger.py
     ROOT_DIR = os.path.join(CURRENT_DIR, "..")  # это корень проекта, где pyproject.toml и от него уже строим пути
     LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 
-    os.makedirs("logs", exist_ok=True)
+    os.makedirs(LOGS_DIR, exist_ok=True)
 
     # Создаем логгер для данного файла
     logger = logging.getLogger(file_name)
@@ -50,8 +48,9 @@ def setup_logger(file_name: str, log_file: str) -> logging.Logger:
     return logger
 
 
-# Запускаем функцию библиотеки logging для логирования указанного файла
+# Запускаем функцию библиотеки logging для логирования данного файла
 logger = setup_logger("views - home_page", "views")
+
 # Загрузка переменных окружения из .env файла
 load_dotenv(".env")
 CURRENCY_API_KEY = os.getenv("CURRENCY_API_KEY")
@@ -101,7 +100,7 @@ def calculate_greeting() -> str:
     return greeting
 
 
-def load_operations_data() -> List[Dict[str, Any]]:
+def load_operations_data() -> List[Dict[str, Union[str, float]]]:
     """
     Загружает данные операций из файла xlsx и преобразует их в список словарей.
 
@@ -122,7 +121,9 @@ def load_operations_data() -> List[Dict[str, Any]]:
     return operations.to_dict(orient="records")  # Здесь ключи будут строками
 
 
-def filter_operations_by_date(operations: List[Dict[str, Any]], input_date: str) -> List[Dict[str, Any]]:
+def filter_operations_by_date(
+    operations: List[Dict[str, Union[str, float]]], input_date: str
+) -> List[Dict[str, Union[str, float]]]:
     """
     Фильтрует операции в заданном диапазоне дат.
 
@@ -151,7 +152,7 @@ def filter_operations_by_date(operations: List[Dict[str, Any]], input_date: str)
     return filtered_operations
 
 
-def get_card_summary(operations: List[Dict[str, Any]]) -> List[Dict[str, Union[str, float]]]:
+def get_card_summary(operations: List[Dict[str, Union[str, float]]]) -> List[Dict[str, Union[str, float]]]:
     """
     Создает сводку по картам с учетом затрат в указанный период и рассчитывает кэшбэк (1 рубль на каждые 100 рублей).
     Учитывает все карты пользователя без операций в указанный период.
@@ -219,7 +220,9 @@ def get_card_summary(operations: List[Dict[str, Any]]) -> List[Dict[str, Union[s
 
 
 # Получение 5 топовых транзакций
-def get_top_transactions(operations: List[Dict[str, Any]], top_n: int = 5) -> List[Dict[str, Union[str, float]]]:
+def get_top_transactions(
+    operations: List[Dict[str, Union[str, float]]], top_n: int = 5
+) -> List[Dict[str, Union[str, float]]]:
     """
     Извлекает топ-N транзакций по сумме.
 
@@ -277,7 +280,7 @@ def fetch_currency_rates() -> List[Dict[str, Union[str, float]]]:
     """
     settings = load_user_settings()
     currencies = settings.get("user_currencies", [])
-    rates = []
+    rates: List[Dict[str, Union[str, float]]] = []
 
     for currency in currencies:
         try:
@@ -287,11 +290,11 @@ def fetch_currency_rates() -> List[Dict[str, Union[str, float]]]:
                 logger.error("Не удалось получить курс валют для %s. Статус код: %d", currency, response.status_code)
                 raise ValueError("Не удалось получить курс валют")
             data = response.json()
-            rate = float(data.get("conversion_rates", {}).get("RUB"))
-            if not rate:
+            rate = data.get("conversion_rates", {}).get("RUB")
+            if rate is None:
                 logger.error("Нет данных по валюте %s", currency)
                 raise ValueError(f"нет данных по валюте {currency}")
-            rates.append({"currency": str(currency), "rate": float(round(rate, 2))})
+            rates.append({"currency": str(currency), "rate": round(float(rate), 2)})
             logger.info("Курс валюты %s: %.4f", currency, rate)
         except RequestException as e:
             logger.error("Ошибка при получении курсов валют для %s: %s", currency, e)
@@ -311,14 +314,14 @@ def fetch_stock_prices() -> List[Dict[str, Union[str, float]]]:
     :return: Список цен тех акций, которые указаны в пользовательских настройках.
     """
     settings = load_user_settings()
-    stocks = settings.get("user_stocks")
+    stocks = settings.get("user_stocks", [])
 
     if not stocks:
         logger.warning("Нет указанных акций для загрузки цен.")
         return []
 
-    prices = []
-    errors = []
+    prices: List[Dict[str, Union[str, float]]] = []
+    errors: List[str] = []
 
     for stock in stocks:
         try:
@@ -328,7 +331,7 @@ def fetch_stock_prices() -> List[Dict[str, Union[str, float]]]:
                 logger.error("Не удалось узнать цены на акции для %s. Статус код: %d", stock, response.status_code)
                 raise ValueError("Не удалось узнать цены на акции")
             data = response.json()
-            if not data["results"]:
+            if not data.get("results"):
                 logger.error("Нет данных по акции %s", stock)
                 raise ValueError(f"нет данных по акции {stock}")
             closing_price = data["results"][0].get("c")
