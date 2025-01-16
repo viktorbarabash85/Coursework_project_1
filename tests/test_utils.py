@@ -1,4 +1,5 @@
 import unittest
+import re
 from datetime import datetime
 from unittest.mock import MagicMock, mock_open, patch
 
@@ -87,9 +88,12 @@ def test_filter_operations_by_date() -> None:
 def test_filter_operations_by_date_invalid_format() -> None:
     """Тест на выброс ValueError при неверном формате даты."""
     operations = [{"Дата операции": "2023-10-01"}, {"Дата операции": "2023-10-02"}]
-    with pytest.raises(
-        ValueError, match="Неверный формат даты: invalid_date. Ожидаемый формат: 'YYYY-MM-DD HH:MM:SS'"
-    ):
+    expected_message = (
+        "Неверный формат даты: invalid_date. Ожидаемый формат: 'YYYY-MM-DD HH:MM:SS "
+        "(пример: 2024-12-31 12:00:00)'"
+    )
+
+    with pytest.raises(ValueError, match=re.escape(expected_message)):
         filter_operations_by_date(operations, "invalid_date")
 
 

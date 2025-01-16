@@ -36,7 +36,7 @@ def test_run_main_page(mock_generate_main_page_data: MagicMock, mock_print: Magi
     )
 
     # Проверяем, что print вызван с ожидаемым текстом
-    mock_print.assert_any_call("Введите дату и время в формате 'YYYY-MM-DD HH:MM:SS': ")
+    mock_print.assert_any_call("\nВведите дату и время в формате 'YYYY-MM-DD HH:MM:SS' (пример: 2024-12-31 12:00:00): ")
 
     # Проверяем, что input вызван с правильным приглашением
     mock_input.assert_called_once_with(">>> ")

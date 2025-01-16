@@ -1,11 +1,16 @@
+import os
 import json
+import pandas as pd
+from datetime import datetime, timedelta
 from typing import Generator
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-# Фикстуры для Веб-страницы. Страница "Главная"
 
+# =============================================
+# 1. Фикстуры для Веб-страницы. Страница "Главная"
+# =============================================
 
 @pytest.fixture
 def mock_generate_main_page_data() -> MagicMock:
@@ -25,7 +30,9 @@ def mock_generate_main_page_data() -> MagicMock:
 
 @pytest.fixture
 def mock_load_user_settings() -> Generator:
-    """Фикстура для замены функции загрузки пользовательских настроек."""
+    """
+    Фикстура для замены функции загрузки пользовательских настроек.
+    """
     with patch("utils.load_user_settings") as mock_settings:
         mock_settings.return_value = {"user_currencies": ["USD", "EUR"], "user_stocks": ["AAPL", "GOOGL"]}
         yield mock_settings  # Возвращаем замоканную функцию
@@ -33,7 +40,9 @@ def mock_load_user_settings() -> Generator:
 
 @pytest.fixture
 def test_operations_data() -> list[dict]:
-    """Фикстура для тестовых данных операций."""
+    """
+    Фикстура для тестовых данных операций.
+    """
     return [
         {"Дата операции": "2023-10-01", "Сумма операции": -1000, "Номер карты": "1234", "Категория": "покупка"},
         {"Дата операции": "2023-10-02", "Сумма операции": -200, "Номер карты": "5678", "Категория": "переводы"},
@@ -44,41 +53,11 @@ def test_operations_data() -> list[dict]:
     ]
 
 
-# @pytest.fixture
-# def mock_api_response():
-#     """Фикстура для замены ответов API."""
-#     with patch('requests.get') as mock_get:
-#         yield mock_get  # Возвращаем замоканную функцию
-
-# @pytest.fixture
-# def set_env_variables(monkeypatch):
-#     """Фикстура для установки переменных окружения."""
-#     monkeypatch.setenv("API_KEY", "test_api_key")  # Устанавливаем переменную окружения
-#     yield  # Возвращаем управление для выполнения тестов
-#     monkeypatch.undo()  # Возвращаем переменные окружения к исходному состоянию
-
-
-#
-# @pytest.fixture
-# def mock_date_input():
-#     """Фикстура для замены ввода даты."""
-#     with patch("builtins.input", return_value="2024-01-01 12:00:00"):
-#         yield
-#
-# @pytest.fixture
-# def mock_file_operations_data():
-#     """Фикстура для мокирования данных из файла Excel."""
-#     mock_data = [
-#         {"Дата операции": "2024-01-01", "Номер карты": "1234", "Сумма операции": -100.0, "Категория": "покупки"},
-#         {"Дата операции": "2024-01-02", "Номер карты": "5678", "Сумма операции": -200.0, "Категория": "покупки"},
-#     ]
-#     with patch("pandas.read_excel", return_value=pd.DataFrame(mock_data)):
-#         yield mock_data
-
-
 @pytest.fixture
 def mock_user_settings() -> Generator:
-    """Фикстура для мокирования пользовательских настроек."""
+    """
+    Фикстура для мокирования пользовательских настроек.
+    """
     settings = {"user_currencies": ["USD", "EUR"], "user_stocks": ["AAPL", "TSLA"]}
     with patch("builtins.open", mock_open(read_data=json.dumps(settings))):
         yield settings
@@ -86,7 +65,9 @@ def mock_user_settings() -> Generator:
 
 @pytest.fixture
 def mock_requests_get() -> Generator:
-    """Фикстура для мокирования HTTP запросов."""
+    """
+    Фикстура для мокирования HTTP запросов.
+    """
     with patch("requests.get") as mock_get:
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = {
@@ -96,9 +77,15 @@ def mock_requests_get() -> Generator:
         yield mock_get
 
 
-# Фикстуры для Сервисы. "Выгодные категории повышенного кешбэка"
+# =============================================
+# 2. Фикстуры для Сервисы. "Выгодные категории повышенного кешбэка"
+# =============================================
+
 @pytest.fixture
 def mock_operations_data_2() -> list[dict]:
+    """
+    Фикстура для тестовых данных операций.
+    """
     return [
         {"Дата операции": "2023-03-01", "Категория": "Еда", "Сумма операции": -1000, "Статус": "SUCCESS"},
         {"Дата операции": "2023-03-02", "Категория": "Транспорт", "Сумма операции": -500, "Статус": "SUCCESS"},
@@ -110,6 +97,9 @@ def mock_operations_data_2() -> list[dict]:
 
 @pytest.fixture
 def mock_operations_data_filtered() -> list[dict]:
+    """
+    Фикстура для тестовых данных операций.
+    """
     return [
         {"Дата операции": "2023-03-01", "Категория": "Еда", "Статус": "SUCCESS", "Сумма операции": -1000},
         {"Дата операции": "2023-03-02", "Категория": "Транспорт", "Статус": "SUCCESS", "Сумма операции": -500},
@@ -130,14 +120,123 @@ def mock_operations_data_filtered() -> list[dict]:
 
 @pytest.fixture
 def mock_load_operations_data() -> dict:
+    """
+    Фикстура для тестовых данных операций.
+    """
     return {"Дата операции": "2020-03-15", "Категория": "Переводы", "Сумма операции": 100, "Статус": "SUCCESS"}
 
 
-# @pytest.fixture
-# def mock_logger_error():
-#     return {
-#         "Дата операции": "2020/03/15",
-#         "Категория": "Продукты",
-#         "Сумма операции": -1000,
-#         "Статус": "OK"
-#     }
+# =============================================
+# 3. Фикстуры для Отчеты. "Расходы по категориям"
+# =============================================
+
+@pytest.fixture
+def empty_transactions():
+    """
+    Фикстура с пустыми тестовыми данными операций.
+    """
+    # Возвращаем пустой DataFrame
+    return pd.DataFrame(columns=["Дата операции", "Сумма операции", "Категория"])
+
+
+@pytest.fixture
+def mock_read_excel():
+    """
+    Фикстура мока загрузки excel.
+    """
+    with patch("pandas.read_excel", return_value=MagicMock()) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_transactions() -> pd.DataFrame:
+    """
+    Создает фиктивный DataFrame с данными о транзакциях.
+    """
+    data = {
+        "Дата операции": ["2024-01-01", "2024-02-15", "2024-03-10"],
+        "Категория": ["еда", "транспорт", "еда"],
+        "Сумма операции": [-100.0, -50.0, -200.0],
+    }
+    return pd.DataFrame(data)
+
+
+@pytest.fixture
+def mock_transactions_2():
+    """
+    Мокированные данные транзакций.
+    """
+    data = {
+        "Дата операции": [
+            "2024-10-01 12:00:00",
+            "2024-10-15 12:00:00",
+            "2024-12-05 12:00:00",
+            "2024-11-01 12:00:00",
+            "2024-12-25 12:00:00",
+        ],
+        "Сумма операции": [
+            -100.0,
+            -100.0,
+            -300.0,
+            -150.0,
+            -50.0
+        ],
+        "Категория": [
+            "Еда",
+            "Еда",
+            "Еда",
+            "Транспорт",
+            "Транспорт"
+        ],
+    }
+
+    df = pd.DataFrame(data)
+    df["Дата операции"] = pd.to_datetime(df["Дата операции"])
+    return df
+
+
+@pytest.fixture
+def mock_date():
+    """
+    Мокированная текущая дата для тестов.
+    """
+    # return datetime(2024, 12, 31)
+    return str("2024-12-31")
+
+
+@pytest.fixture
+def fake_transactions():
+    """
+    Фиктивные данные транзакций.
+    """
+    data = {
+        "Дата операции": [
+            datetime(2024, 10, 1, 12, 0, 0),
+            datetime(2024, 10, 15, 12, 0, 0),
+            datetime(2024, 11, 1, 12, 0, 0),
+            datetime(2024, 12, 25, 12, 0, 0),
+        ],
+        "Сумма операции": [-100.0, -300.0, -150.0, -50.0],
+        "Категория": ["Еда", "Еда", "Транспорт", "Транспорт"],
+    }
+    return pd.DataFrame(data)
+
+
+@pytest.fixture
+def fake_report():
+    """
+    Фиктивный отчёт, возвращаемый spending_by_category.
+    """
+    return {
+        "general_information": {
+            "category": "Еда",
+            "start_date": "2024-09-15",
+            "end_date": "2024-12-15",
+            "total_spent": 400.0,
+            "transactions_count": 2,
+        },
+        "detailed_information": [
+            {"date_amount": "2024-10-01", "transaction_amount": -100.0, "category": "Еда"},
+            {"date_amount": "2024-10-15", "transaction_amount": -300.0, "category": "Еда"},
+        ],
+    }
