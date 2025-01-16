@@ -136,7 +136,6 @@ def run_profit_cashback() -> None:
             month_input = input("Введите номер месяца для анализа (1-12):\n>>> ")
             if month_input.isdigit() and 1 <= int(month_input) <= 12:
                 month = int(month_input)
-                print(f"Выбран месяц: {month}")
                 break
             print("Ошибка. Некорректный ввод месяца. Повторите попытку.")
             logger.error(f"Некорректный ввод месяца: {month_input}.")

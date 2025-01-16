@@ -2,7 +2,8 @@ import json
 import logging
 import os
 from datetime import datetime
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Any
+from colorlog import ColoredFormatter
 
 import pandas as pd
 import requests
@@ -21,6 +22,31 @@ def setup_logger(file_name: str, log_file: str) -> logging.Logger:
     :return: logger переменная формата logging, со всеми настройками
     """
 
+    # ============================================================================== #
+    # IDEA: # INTEREST: # Определяем новый уровень логирования "ОК"                  #
+    # ============================================================================== #
+
+    # Определяем новый уровень логирования OK
+    ok_level = 22
+    logging.addLevelName(ok_level, "OK")
+
+    # Создаем свой класс логгера
+    class CustomLogger(logging.Logger):
+        def ok(self, msg: str, *args: Any, **kwargs: Any) -> None:
+            if self.isEnabledFor(ok_level):
+                self._log(ok_level, msg, args, **kwargs)
+
+    # Регистрируем наш класс логгера
+    logging.setLoggerClass(CustomLogger)
+
+    # Создаем логгер
+    logger = logging.getLogger(file_name)
+    logger.setLevel(logging.DEBUG)
+
+    # ================================================================================= #
+    # NOTE: Настраиваем директорию и файл для логов                                     #
+    # ================================================================================= #
+
     # Создаем директорию для логов, если она не существует
     CURRENT_DIR = os.path.dirname(__file__)  # отталкиваемся от директории модуля file_logger.py
     ROOT_DIR = os.path.join(CURRENT_DIR, "..")  # это корень проекта, где pyproject.toml и от него уже строим пути
@@ -28,23 +54,43 @@ def setup_logger(file_name: str, log_file: str) -> logging.Logger:
 
     os.makedirs(LOGS_DIR, exist_ok=True)
 
-    # Создаем логгер для данного файла
-    logger = logging.getLogger(file_name)
-    logger.setLevel(logging.DEBUG)
-
-    # Создаем обработчик для записи логов в файл
+    # Полный путь к файлу логов
     full_log_file_path = os.path.join(LOGS_DIR, f"{log_file}.log")
 
     # Перезаписываем файл при каждом запуске
     file_handler = logging.FileHandler(full_log_file_path, mode="w", encoding="utf-8")
-    file_handler.setLevel(logging.DEBUG)  # Уровень логирования для обработчика
+    file_handler.setLevel(logging.DEBUG)  # Уровень логирования для обработчика файла
 
     # Устанавливаем формат записи логов
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)  # Добавляем обработчик к логгеру
 
-    # Добавляем обработчик к логгеру
-    logger.addHandler(file_handler)
+    # ================================================================================= #
+    # COLOR: # Настраиваем консольное логирование с цветами                             #
+    # ================================================================================= #
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
+
+    # Добавляем цветное форматирование для консоли
+    console_formatter = ColoredFormatter(
+        "%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        log_colors={
+            "DEBUG": "cyan",
+            "INFO": "yellow", # по умолчанию "green" Цвет для уровня "ОК", можно bold_green
+            "WARNING": "yellow",
+            "ERROR": "red",
+            "CRITICAL": "bold_red",
+            "OK": "bold_green",  # Цвет для уровня "ОК", можно bold_green
+        },
+    )
+
+    # ================================================================================= #
+    # IMPORTANT: # Раскомментируйте две последующие строки для логгирования в консоль   #
+    # ================================================================================= #
+    # console_handler.setFormatter(console_formatter)
+    # logger.addHandler(console_handler)
+
     return logger
 
 
@@ -67,7 +113,7 @@ def validate_input_date() -> str:
     :return: Корректная дата в формате 'YYYY-MM-DD HH:MM:SS'
     """
     while True:
-        print("Введите дату и время в формате 'YYYY-MM-DD HH:MM:SS': ")
+        print("\nВведите дату и время в формате 'YYYY-MM-DD HH:MM:SS' (пример: 2024-12-31 12:00:00): ")
         input_date = input(">>> ").strip().lower()
         try:
             datetime.strptime(input_date, "%Y-%m-%d %H:%M:%S")
@@ -76,7 +122,8 @@ def validate_input_date() -> str:
         except ValueError:
             logger.warning("Некорректный формат даты: %s", input_date)
             print(
-                "Ошибка: Неверный формат даты. Ожидаемый формат: 'YYYY-MM-DD HH:MM:SS'. Пожалуйста, попробуйте снова."
+                "Ошибка: Неверный формат даты. Ожидаемый формат: 'YYYY-MM-DD HH:MM:SS' (пример: 2024-12-31 12:00:00)."
+                " Пожалуйста, попробуйте снова "
             )
 
 
@@ -135,7 +182,8 @@ def filter_operations_by_date(
         date_obj = datetime.strptime(input_date, "%Y-%m-%d %H:%M:%S")
     except ValueError:
         logger.error("Неверный формат даты: %s", input_date)
-        raise ValueError(f"Неверный формат даты: {input_date}. Ожидаемый формат: 'YYYY-MM-DD HH:MM:SS'")
+        raise ValueError(f"Неверный формат даты: {input_date}. Ожидаемый формат: 'YYYY-MM-DD HH:MM:SS "
+                         f"(пример: 2024-12-31 12:00:00)'")
 
     start_date = date_obj.replace(day=1).strftime("%Y-%m-%d")
     end_date = date_obj.strftime("%Y-%m-%d")
@@ -249,7 +297,8 @@ def get_top_transactions(
 
     # Логируем каждую топовую транзакцию по расходам
     for transaction in top_transactions:
-        logger.info("Транзакция выбрана: категория - %s, сумма - %.2f", transaction["category"], transaction["amount"])
+        logger.info("Транзакция выбрана: категория - %s, сумма - %.2f",
+                    transaction["category"], transaction["amount"])
 
     return top_transactions
 
@@ -287,7 +336,8 @@ def fetch_currency_rates() -> List[Dict[str, Union[str, float]]]:
             url = f"https://v6.exchangerate-api.com/v6/{CURRENCY_API_KEY}/latest/{currency}"
             response = requests.get(url, timeout=10)
             if response.status_code != 200:
-                logger.error("Не удалось получить курс валют для %s. Статус код: %d", currency, response.status_code)
+                logger.error("Не удалось получить курс валют для %s. Статус код: %d",
+                             currency, response.status_code)
                 raise ValueError("Не удалось получить курс валют")
             data = response.json()
             rate = data.get("conversion_rates", {}).get("RUB")
@@ -328,7 +378,8 @@ def fetch_stock_prices() -> List[Dict[str, Union[str, float]]]:
             url = f"https://api.polygon.io/v2/aggs/ticker/{stock}/prev?adjusted=true&apiKey={STOCK_API_KEY}"
             response = requests.get(url, timeout=10)
             if response.status_code != 200:
-                logger.error("Не удалось узнать цены на акции для %s. Статус код: %d", stock, response.status_code)
+                logger.error("Не удалось узнать цены на акции для %s. Статус код: %d",
+                             stock, response.status_code)
                 raise ValueError("Не удалось узнать цены на акции")
             data = response.json()
             if not data.get("results"):
