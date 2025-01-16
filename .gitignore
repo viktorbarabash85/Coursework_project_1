@@ -189,5 +189,7 @@ fabric.properties
 .venv/
 logs/
 logs
-logs
+.env.txt
+keyword_comment_pattern.txt
 # poetry.lock
+reports/
