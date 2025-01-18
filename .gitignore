@@ -187,4 +187,9 @@ fabric.properties
 # *.xlsx
 *.pyc
 .venv/
+logs/
+logs
+.env.txt
+keyword_comment_pattern.txt
 # poetry.lock
+reports/
